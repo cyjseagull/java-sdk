@@ -182,12 +182,21 @@ public class ParallelOkDemo {
         System.exit(0);
     }
 
-    public void queryAccount(BigInteger qps) throws InterruptedException {
+    public void queryAccount(BigInteger queryCount, BigInteger qps, boolean statistic)
+            throws InterruptedException {
         final List<DagTransferUser> allUsers = dagUserInfo.getUserList();
         RateLimiter rateLimiter = RateLimiter.create(qps.intValue());
         AtomicInteger sent = new AtomicInteger(0);
-        for (Integer i = 0; i < allUsers.size(); i++) {
-            final Integer index = i;
+        final Integer userSize = allUsers.size();
+
+        long startTime = System.currentTimeMillis();
+        PerformanceCollector collector = new PerformanceCollector();
+        collector.setStartTimestamp(startTime);
+        Integer area = queryCount.intValue() / 10;
+        collector.setTotal(Integer.valueOf(queryCount.intValue()));
+
+        for (Integer i = 0; i < queryCount.intValue(); i++) {
+            final Integer index = i.intValue() % userSize.intValue();
             rateLimiter.acquire();
             threadPoolService
                     .getThreadPool()
@@ -196,26 +205,40 @@ public class ParallelOkDemo {
                                 @Override
                                 public void run() {
                                     try {
+                                        Long startT = System.nanoTime();
                                         BigInteger result =
                                                 parallelOk.balanceOf(allUsers.get(index).getUser());
+                                        Long cost = System.nanoTime() - startT;
                                         allUsers.get(index).setAmount(result);
                                         int all = sent.incrementAndGet();
-                                        if (all >= allUsers.size()) {
+                                        if (all >= queryCount.intValue()) {
                                             System.out.println(
                                                     dateFormat.format(new Date())
                                                             + " Query account finished");
+                                        }
+                                        if (statistic) {
+                                            if (sent.get() >= area && ((sent.get() % area) == 0)) {
+                                                System.out.println(
+                                                        "Already sent: "
+                                                                + sent.get()
+                                                                + "/"
+                                                                + queryCount.intValue()
+                                                                + " transactions");
+                                            }
+                                            collector.onCallResponse(cost);
                                         }
                                     } catch (ContractException exception) {
                                         logger.warn(
                                                 "queryAccount for {} failed, error info: {}",
                                                 allUsers.get(index).getUser(),
                                                 exception.getMessage());
+                                        collector.onCallResponse(0L);
                                         System.exit(0);
                                     }
                                 }
                             });
         }
-        while (sent.get() < allUsers.size()) {
+        while (sent.get() < queryCount.intValue()) {
             Thread.sleep(50);
         }
     }
@@ -223,7 +246,7 @@ public class ParallelOkDemo {
     public void userTransfer(BigInteger count, BigInteger qps)
             throws InterruptedException, IOException {
         System.out.println("Querying account info...");
-        queryAccount(qps);
+        queryAccount(BigInteger.valueOf(dagUserInfo.getUserList().size()), qps, false);
         System.out.println("Sending transfer transactions...");
         RateLimiter limiter = RateLimiter.create(qps.intValue());
         int division = count.intValue() / 10;

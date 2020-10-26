@@ -65,6 +65,10 @@ public class PerformanceCollector {
         }
     }
 
+    public void onCallResponse(Long cost) {
+        stat(false, cost);
+    }
+
     public void onMessage(TransactionReceipt receipt, Long cost) {
         try {
             boolean errorMessage = false;

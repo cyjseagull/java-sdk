@@ -127,14 +127,23 @@ public class DagPrecompiledDemo {
         System.exit(0);
     }
 
-    public void queryAccountInfo(BigInteger qps) throws InterruptedException {
+    public void queryAccountInfo(BigInteger queryCount, BigInteger qps, boolean statistic)
+            throws InterruptedException {
         System.out.println("Start queryAccountInfo...");
         // get the user
         List<DagTransferUser> allUser = dagUserInfo.getUserList();
         RateLimiter rateLimiter = RateLimiter.create(qps.intValue());
         AtomicInteger getted = new AtomicInteger(0);
-        for (Integer i = 0; i < allUser.size(); i++) {
-            final Integer index = i;
+        Integer userSize = allUser.size();
+
+        long startTime = System.currentTimeMillis();
+        PerformanceCollector collector = new PerformanceCollector();
+        collector.setStartTimestamp(startTime);
+        Integer area = queryCount.intValue() / 10;
+        collector.setTotal(Integer.valueOf(queryCount.intValue()));
+
+        for (Integer i = 0; i < queryCount.intValue(); i++) {
+            final Integer index = i.intValue() % userSize.intValue();
             rateLimiter.acquire();
             threadPoolService
                     .getThreadPool()
@@ -143,9 +152,11 @@ public class DagPrecompiledDemo {
                                 @Override
                                 public void run() {
                                     try {
+                                        Long startT = System.nanoTime();
                                         Tuple2<BigInteger, BigInteger> result =
                                                 dagTransfer.userBalance(
                                                         allUser.get(index).getUser());
+                                        Long cost = System.nanoTime() - startT;
 
                                         if (result.getValue1().compareTo(new BigInteger("0"))
                                                 == 0) {
@@ -157,11 +168,25 @@ public class DagPrecompiledDemo {
                                             System.exit(0);
                                         }
                                         int all = getted.incrementAndGet();
-                                        if (all >= allUser.size()) {
+                                        if (all >= queryCount.intValue()) {
                                             System.out.println(
                                                     dateFormat.format(new Date())
                                                             + " Query account finished");
                                         }
+
+                                        if (statistic) {
+                                            if (getted.get() >= area
+                                                    && ((getted.get() % area) == 0)) {
+                                                System.out.println(
+                                                        "Already sent: "
+                                                                + getted.get()
+                                                                + "/"
+                                                                + queryCount.intValue()
+                                                                + " transactions");
+                                            }
+                                            collector.onCallResponse(cost);
+                                        }
+
                                     } catch (Exception e) {
                                         System.out.println(
                                                 " Query failed, user is "
@@ -171,7 +196,7 @@ public class DagPrecompiledDemo {
                                 }
                             });
         }
-        while (getted.get() < allUser.size()) {
+        while (getted.get() < queryCount.intValue()) {
             Thread.sleep(50);
         }
     }
@@ -179,7 +204,7 @@ public class DagPrecompiledDemo {
     public void userTransfer(BigInteger count, BigInteger qps) throws InterruptedException {
         System.out.println("Start userTransfer test...");
         System.out.println("===================================================================");
-        queryAccountInfo(qps);
+        queryAccountInfo(BigInteger.valueOf(dagUserInfo.getUserList().size()), qps, false);
         long startTime = System.currentTimeMillis();
         AtomicInteger sended = new AtomicInteger(0);
         AtomicInteger sendFailed = new AtomicInteger(0);

@@ -37,11 +37,15 @@ public class ParallelOkPerf {
                 " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.ParallelOkPerf [parallelok] [groupID] [add] [count] [tps] [file].");
         System.out.println(
                 " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.ParallelOkPerf [parallelok] [groupID] [transfer] [count] [tps] [file].");
+        System.out.println(
+                " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.ParallelOkPerf [parallelok] [groupID] [query] [count] [tps] [file].");
         System.out.println("===== DagTransafer test===========");
         System.out.println(
                 " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.ParallelOkPerf [precompiled] [groupID] [add] [count] [tps] [file].");
         System.out.println(
                 " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.ParallelOkPerf [precompiled] [groupID] [transfer] [count] [tps] [file].");
+        System.out.println(
+                " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.ParallelOkPerf [precompiled] [groupID] [query] [count] [tps] [file].");
     }
 
     public static void main(String[] args)
@@ -131,12 +135,26 @@ public class ParallelOkPerf {
                 parallelOkDemo = new ParallelOkDemo(parallelOk, dagUserInfo, threadPoolService);
                 parallelOkDemo.userTransfer(BigInteger.valueOf(count), BigInteger.valueOf(qps));
                 break;
-
+            case "query":
+                dagUserInfo.loadDagTransferUser();
+                parallelOk =
+                        ParallelOk.load(
+                                dagUserInfo.getContractAddr(),
+                                client,
+                                client.getCryptoSuite().getCryptoKeyPair());
+                System.out.println(
+                        "====== ParallelOk query, load account success, address: "
+                                + parallelOk.getContractAddress());
+                parallelOkDemo = new ParallelOkDemo(parallelOk, dagUserInfo, threadPoolService);
+                parallelOkDemo.queryAccount(
+                        BigInteger.valueOf(count), BigInteger.valueOf(qps), true);
+                break;
             default:
                 System.out.println("invalid command: " + command);
                 Usage();
                 break;
         }
+        System.exit(0);
     }
 
     public static void dagTransferPerf(
@@ -146,29 +164,49 @@ public class ParallelOkPerf {
             Integer qps,
             ThreadPoolService threadPoolService)
             throws IOException, InterruptedException, ContractException {
-        System.out.println(
-                "====== DagTransfer trans, count: "
-                        + count
-                        + ", qps:"
-                        + qps
-                        + ", groupId: "
-                        + groupId);
-
         DagPrecompiledDemo dagPrecompiledDemo;
         switch (command) {
             case "add":
+                System.out.println(
+                        "====== DagTransfer add, count: "
+                                + count
+                                + ", qps:"
+                                + qps
+                                + ", groupId: "
+                                + groupId);
                 dagPrecompiledDemo = new DagPrecompiledDemo(client, dagUserInfo, threadPoolService);
                 dagPrecompiledDemo.userAdd(BigInteger.valueOf(count), BigInteger.valueOf(qps));
                 break;
             case "transfer":
+                System.out.println(
+                        "====== DagTransfer transfer, count: "
+                                + count
+                                + ", qps:"
+                                + qps
+                                + ", groupId: "
+                                + groupId);
                 dagUserInfo.loadDagTransferUser();
                 dagPrecompiledDemo = new DagPrecompiledDemo(client, dagUserInfo, threadPoolService);
                 dagPrecompiledDemo.userTransfer(BigInteger.valueOf(count), BigInteger.valueOf(qps));
+                break;
+            case "query":
+                System.out.println(
+                        "====== DagTransfer query, count: "
+                                + count
+                                + ", qps:"
+                                + qps
+                                + ", groupId: "
+                                + groupId);
+                dagUserInfo.loadDagTransferUser();
+                dagPrecompiledDemo = new DagPrecompiledDemo(client, dagUserInfo, threadPoolService);
+                dagPrecompiledDemo.queryAccountInfo(
+                        BigInteger.valueOf(count), BigInteger.valueOf(qps), true);
                 break;
             default:
                 System.out.println("invalid command: " + command);
                 Usage();
                 break;
         }
+        System.exit(0);
     }
 };
