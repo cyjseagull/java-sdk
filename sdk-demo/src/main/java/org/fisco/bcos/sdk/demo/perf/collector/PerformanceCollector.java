@@ -90,8 +90,8 @@ public class PerformanceCollector {
         if (errorMessage) {
             error.addAndGet(1);
         }
-
-        if ((received.get() + 1) % (total / 10) == 0) {
+        int area = total / 10;
+        if (area > 0 && (received.get() + 1) % area == 0) {
             System.out.println(
                     "                                                       |received:"
                             + String.valueOf((received.get() + 1) * 100 / total)

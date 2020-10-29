@@ -92,7 +92,9 @@ public class DagPrecompiledDemo {
                                         callback.setTimeout(0);
                                         dagTransfer.userAdd(user, amount, callback);
                                         int current = sended.incrementAndGet();
-                                        if (current >= area && ((current % area) == 0)) {
+                                        if (area != 0
+                                                && current >= area
+                                                && ((current % area) == 0)) {
                                             System.out.println(
                                                     "Already sended: "
                                                             + current
@@ -175,7 +177,8 @@ public class DagPrecompiledDemo {
                                         }
 
                                         if (statistic) {
-                                            if (getted.get() >= area
+                                            if (area != 0
+                                                    && getted.get() >= area
                                                     && ((getted.get() % area) == 0)) {
                                                 System.out.println(
                                                         "Already sent: "
@@ -243,7 +246,9 @@ public class DagPrecompiledDemo {
                                         long elapsed = System.currentTimeMillis() - startTime;
                                         sended.incrementAndGet();
                                         double sendSpeed = sended.get() / ((double) elapsed / 1000);
-                                        if (sended.get() >= area && ((sended.get() % area) == 0)) {
+                                        if (area != 0
+                                                && sended.get() >= area
+                                                && ((sended.get() % area) == 0)) {
                                             System.out.println(
                                                     "Already sent: "
                                                             + sended.get()

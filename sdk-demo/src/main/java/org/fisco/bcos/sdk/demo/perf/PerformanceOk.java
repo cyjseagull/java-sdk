@@ -109,7 +109,9 @@ public class PerformanceOk {
                                             logger.info(e.getMessage());
                                         }
                                         int current = sendedTransactions.incrementAndGet();
-                                        if (current >= area && ((current % area) == 0)) {
+                                        if (!area.equals(0)
+                                                && current >= area
+                                                && ((current % area) == 0)) {
                                             System.out.println(
                                                     "Already sended: "
                                                             + current

@@ -143,7 +143,9 @@ public class ParallelOkDemo {
                                         parallelOk.set(user, amount, callback);
                                         int current = sended.incrementAndGet();
 
-                                        if (current >= area && ((current % area) == 0)) {
+                                        if (area != 0
+                                                && current >= area
+                                                && ((current % area) == 0)) {
                                             long elapsed = System.currentTimeMillis() - startTime;
                                             double sendSpeed = current / ((double) elapsed / 1000);
                                             System.out.println(
@@ -217,7 +219,9 @@ public class ParallelOkDemo {
                                                             + " Query account finished");
                                         }
                                         if (statistic) {
-                                            if (sent.get() >= area && ((sent.get() % area) == 0)) {
+                                            if (area != 0
+                                                    && sent.get() >= area
+                                                    && ((sent.get() % area) == 0)) {
                                                 System.out.println(
                                                         "Already sent: "
                                                                 + sent.get()

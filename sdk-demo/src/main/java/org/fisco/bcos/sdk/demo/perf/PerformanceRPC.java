@@ -161,7 +161,9 @@ public class PerformanceRPC {
 
                                         int current = sended.incrementAndGet();
 
-                                        if (current >= area && ((current % area) == 0)) {
+                                        if (area != 0
+                                                && current >= area
+                                                && ((current % area) == 0)) {
                                             System.out.println(
                                                     "Already sended: "
                                                             + current
@@ -245,7 +247,7 @@ public class PerformanceRPC {
 
                                     int current = sended.incrementAndGet();
 
-                                    if (current >= area && ((current % area) == 0)) {
+                                    if (area != 0 && current >= area && ((current % area) == 0)) {
                                         System.out.println(
                                                 "Already sended: "
                                                         + current

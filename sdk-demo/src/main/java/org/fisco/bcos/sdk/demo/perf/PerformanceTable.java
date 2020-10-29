@@ -115,7 +115,9 @@ public class PerformanceTable {
                                     public void run() {
                                         callTableOperation(command, tableTest, collector);
                                         int current = sendedTransactions.incrementAndGet();
-                                        if (current >= area && ((current % area) == 0)) {
+                                        if (area != 0
+                                                && current >= area
+                                                && ((current % area) == 0)) {
                                             System.out.println(
                                                     "Already sended: "
                                                             + current
