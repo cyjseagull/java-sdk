@@ -119,7 +119,7 @@ public class ParallelOkPerf {
                 System.out.println(
                         "====== ParallelOk userAdd, deploy success, address: "
                                 + parallelOk.getContractAddress());
-                parallelOkDemo = new ParallelOkDemo(parallelOk, dagUserInfo, threadPoolService);
+                parallelOkDemo = new ParallelOkDemo(client, parallelOk, dagUserInfo, threadPoolService);
                 parallelOkDemo.userAdd(BigInteger.valueOf(count), BigInteger.valueOf(qps));
                 break;
             case "transfer":
@@ -132,7 +132,7 @@ public class ParallelOkPerf {
                 System.out.println(
                         "====== ParallelOk trans, load success, address: "
                                 + parallelOk.getContractAddress());
-                parallelOkDemo = new ParallelOkDemo(parallelOk, dagUserInfo, threadPoolService);
+                parallelOkDemo = new ParallelOkDemo(client, parallelOk, dagUserInfo, threadPoolService);
                 parallelOkDemo.userTransfer(BigInteger.valueOf(count), BigInteger.valueOf(qps));
                 break;
             case "query":
@@ -145,7 +145,7 @@ public class ParallelOkPerf {
                 System.out.println(
                         "====== ParallelOk query, load account success, address: "
                                 + parallelOk.getContractAddress());
-                parallelOkDemo = new ParallelOkDemo(parallelOk, dagUserInfo, threadPoolService);
+                parallelOkDemo = new ParallelOkDemo(client, parallelOk, dagUserInfo, threadPoolService);
                 parallelOkDemo.queryAccount(
                         BigInteger.valueOf(count), BigInteger.valueOf(qps), true);
                 break;

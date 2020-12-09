@@ -21,6 +21,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.client.protocol.response.BlockNumber;
 import org.fisco.bcos.sdk.demo.contract.ParallelOk;
 import org.fisco.bcos.sdk.demo.perf.callback.ParallelOkCallback;
 import org.fisco.bcos.sdk.demo.perf.collector.PerformanceCollector;
@@ -42,9 +45,12 @@ public class ParallelOkDemo {
     private final ThreadPoolService threadPoolService;
     private final PerformanceCollector collector;
     private final DagUserInfo dagUserInfo;
+    private Client client;
 
     public ParallelOkDemo(
+            Client client,
             ParallelOk parallelOk, DagUserInfo dagUserInfo, ThreadPoolService threadPoolService) {
+        this.client = client;
         this.threadPoolService = threadPoolService;
         this.parallelOk = parallelOk;
         this.dagUserInfo = dagUserInfo;
@@ -210,6 +216,9 @@ public class ParallelOkDemo {
                                         Long startT = System.nanoTime();
                                         BigInteger result =
                                                 parallelOk.balanceOf(allUsers.get(index).getUser());
+                                        BlockNumber blockNumber = client.getBlockNumber();
+                                        // getBlock
+                                        client.getBlockByNumber(blockNumber.getBlockNumber(), false);
                                         Long cost = System.nanoTime() - startT;
                                         allUsers.get(index).setAmount(result);
                                         int all = sent.incrementAndGet();
