@@ -182,6 +182,7 @@ public class PerformanceCollector {
                             + "  : "
                             + String.valueOf((double) timeout2000.get() / total * 100)
                             + "%");
+            System.exit(0);
         }
     }
 

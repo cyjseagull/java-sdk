@@ -23,7 +23,9 @@ public class PerformanceRPC {
         System.out.println(
                 " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.PerformanceRPC groupID totalCount qps");
         System.out.println(
-                " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.PerformanceRPC groupID totalCount qps getBlock [startBlockNumber] [blockOffset]");
+                " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.PerformanceRPC totalCount qps groupID getBlock [startBlockNumber] [blockOffset]");
+        System.out.println(
+                " \t java -cp 'conf/:lib/*:apps/*' org.fisco.bcos.sdk.demo.perf.PerformanceRPC totalCount qps groupID getTransaction [startBlockNumber] [blockOffset]");
         System.exit(0);
     }
 
@@ -67,6 +69,9 @@ public class PerformanceRPC {
                 switch (command) {
                     case "getBlock":
                         getBlockByNumberPerf(args, client, count, qps, threadPoolService);
+                        break;
+                    case "getTransaction":
+                        getTransactionPerf(args, client, count, qps, threadPoolService);
                         break;
                     default:
                         System.out.println("invalid command: " + command);
@@ -233,6 +238,85 @@ public class PerformanceRPC {
                                         }
                                         Long startTime = System.nanoTime();
                                         client.getBlockByNumber(blockNumber, false);
+                                        Long cost = System.nanoTime() - startTime;
+                                        collector.onRpcMessage(response, cost);
+                                    } catch (Exception e) {
+                                        logger.error(
+                                                "test getBlockPerf failed, error info: {}",
+                                                e.getMessage());
+                                        JsonRpcResponse.Error error = new JsonRpcResponse.Error();
+                                        error.setCode(1);
+                                        response.setError(error);
+                                        collector.onRpcMessage(response, 0L);
+                                    }
+
+                                    int current = sended.incrementAndGet();
+
+                                    if (area != 0 && current >= area && ((current % area) == 0)) {
+                                        System.out.println(
+                                                "Already sended: "
+                                                        + current
+                                                        + "/"
+                                                        + total
+                                                        + " RPC Requests");
+                                    }
+                                }
+                            });
+        }
+        while (collector.getReceived().longValue() < collector.getTotal().longValue()) {
+            Thread.sleep(50);
+        }
+    }
+
+    public static void getTransactionPerf(
+            String[] args,
+            Client client,
+            Integer count,
+            Integer qps,
+            ThreadPoolService threadPoolService)
+            throws InterruptedException {
+        final BigInteger currentBlockNumber = client.getBlockNumber().getBlockNumber();
+        BigInteger startBlockNumber = currentBlockNumber;
+        if (args.length == 5) {
+            startBlockNumber = new BigInteger(args[4]);
+        }
+        BigInteger blockNumberOffset = BigInteger.ZERO;
+        if (args.length == 6) {
+            blockNumberOffset = new BigInteger(args[5]);
+        }
+        RateLimiter limiter = RateLimiter.create(qps);
+        PerformanceCollector collector = new PerformanceCollector();
+        collector.setTotal(count);
+        Integer area = count / 10;
+        final Integer total = count;
+        for (Integer i = 0; i < count; ++i) {
+            final BigInteger threadLocalStartBlockNumber = startBlockNumber;
+            final int blockNumberOffSet = blockNumberOffset.intValue();
+            final int index = i.intValue();
+            threadPoolService
+                    .getThreadPool()
+                    .execute(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    limiter.acquire();
+                                    JsonRpcResponse response = new JsonRpcResponse();
+                                    try {
+                                        BigInteger blockNumber = threadLocalStartBlockNumber;
+                                        int offset = 0;
+                                        if (blockNumberOffSet > 0) {
+                                            offset = index % blockNumberOffSet;
+                                        }
+                                        blockNumber = blockNumber.add(BigInteger.valueOf(offset));
+                                        if (blockNumber.compareTo(currentBlockNumber) > 0) {
+                                            blockNumber =
+                                                    BigInteger.valueOf(
+                                                            blockNumber.intValue()
+                                                                    % currentBlockNumber
+                                                                    .intValue());
+                                        }
+                                        Long startTime = System.nanoTime();
+                                        client.getBlockByNumber(blockNumber, true);
                                         Long cost = System.nanoTime() - startTime;
                                         collector.onRpcMessage(response, cost);
                                     } catch (Exception e) {
