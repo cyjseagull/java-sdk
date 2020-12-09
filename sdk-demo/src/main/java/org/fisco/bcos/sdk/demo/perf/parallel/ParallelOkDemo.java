@@ -229,7 +229,7 @@ public class ParallelOkDemo {
                                                                 + queryCount.intValue()
                                                                 + " transactions");
                                             }
-                                            collector.onCallResponse(cost);
+                                            collector.onCallResponse(cost/1000000);
                                         }
                                     } catch (ContractException exception) {
                                         logger.warn(

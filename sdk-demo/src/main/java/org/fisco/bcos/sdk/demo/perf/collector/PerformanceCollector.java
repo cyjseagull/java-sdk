@@ -133,7 +133,7 @@ public class PerformanceCollector {
                     "TPS(exclude error requests): "
                             + String.valueOf(
                                     (double) (total - error.get()) / ((double) totalTime / 1000)));
-            System.out.println("Avg time cost: " + String.valueOf(totalTime / total) + "ms");
+            System.out.println("Avg time cost: " + String.valueOf(totalCost.get() / total) + "ms");
             System.out.println(
                     "Error rate: "
                             + String.valueOf((error.get() / (double) received.get()) * 100)

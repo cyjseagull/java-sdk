@@ -318,7 +318,7 @@ public class PerformanceRPC {
                                         Long startTime = System.nanoTime();
                                         client.getBlockByNumber(blockNumber, true);
                                         Long cost = System.nanoTime() - startTime;
-                                        collector.onRpcMessage(response, cost);
+                                        collector.onRpcMessage(response, cost/1000000);
                                     } catch (Exception e) {
                                         logger.error(
                                                 "test getBlockPerf failed, error info: {}",
