@@ -111,8 +111,8 @@ public class ParallelOkDemo {
         long currentSeconds = System.currentTimeMillis() / 1000L;
         Integer area = userCount.intValue() / 10;
         long startTime = System.currentTimeMillis();
-        collector.setTotal(userCount.intValue());
         collector.setStartTimestamp(startTime);
+        collector.setTotal(userCount.intValue());
         AtomicInteger sendFailed = new AtomicInteger(0);
         for (Integer i = 0; i < userCount.intValue(); i++) {
             final Integer index = i;
@@ -194,8 +194,8 @@ public class ParallelOkDemo {
         long startTime = System.currentTimeMillis();
         PerformanceCollector collector = new PerformanceCollector();
         collector.setStartTimestamp(startTime);
+        collector.setTotal(queryCount.intValue());
         Integer area = queryCount.intValue() / 10;
-        collector.setTotal(Integer.valueOf(queryCount.intValue()));
 
         for (Integer i = 0; i < queryCount.intValue(); i++) {
             final Integer index = i.intValue() % userSize.intValue();
