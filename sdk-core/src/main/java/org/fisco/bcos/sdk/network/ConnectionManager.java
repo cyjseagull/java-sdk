@@ -223,6 +223,9 @@ public class ConnectionManager {
     private SslContext initSslContext(ConfigOption configOption) throws NetworkException {
         try {
             Security.setProperty("jdk.disabled.namedCurves", "");
+            Security.setProperty("jdk.certpath.disabledAlgorithms", "");
+            Security.setProperty("jdk.tls.disabledAlgorithms", "");
+            Security.setProperty("jdk.jar.disabledAlgorithms", "");
             System.setProperty("jdk.sunec.disableNative", "false");
             // Get file, file existence is already checked when check config file.
             // Init SslContext
